@@ -18,7 +18,7 @@
 
 # set base Docker image to AdoptOpenJDK Ubuntu Docker image
 FROM adoptopenjdk:11.0.6_10-jdk-hotspot-bionic
-LABEL maintainer="Do Tien Hung <hungdt.it@gmai.com>"
+LABEL maintainer="Do Tien Hung <hungdt.it@gmail.com>"
 
 # set Docker image build arguments
 # build arguments for user/group configurations
@@ -29,7 +29,7 @@ ARG USER_GROUP_ID=802
 ARG USER_HOME=/home/${USER}
 # build arguments for WSO2 product installation
 ARG WSO2_SERVER_NAME=wso2is
-ARG WSO2_SERVER_VERSION=5.10.0
+ARG WSO2_SERVER_VERSION=5.11.0
 ARG WSO2_SERVER_REPOSITORY=product-is
 ARG WSO2_SERVER=${WSO2_SERVER_NAME}-${WSO2_SERVER_VERSION}
 ARG WSO2_SERVER_HOME=${USER_HOME}/${WSO2_SERVER}
@@ -48,7 +48,7 @@ which is under the Apache License, Version 2.0. \n\
 Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
 
 # Must have packages
-RUN apt-get update && apt-get install -y vim nano zsh curl git sudo
+RUN apt-get update && apt-get install -y vim nano zsh curl git sudo telnet
 
 # create the non-root user and group and set MOTD login message
 RUN \
@@ -83,11 +83,25 @@ RUN \
 # add libraries for Kubernetes membership scheme based clustering
 ADD --chown=wso2carbon:wso2 https://repo1.maven.org/maven2/dnsjava/dnsjava/${DNS_JAVA_VERSION}/dnsjava-${DNS_JAVA_VERSION}.jar ${WSO2_SERVER_HOME}/repository/components/lib/
 ADD --chown=wso2carbon:wso2 https://repo1.maven.org/maven2/org/wso2/carbon/kubernetes/artifacts/kubernetes-membership-scheme/${K8S_MEMBERSHIP_SCHEME_VERSION}/kubernetes-membership-scheme-${K8S_MEMBERSHIP_SCHEME_VERSION}.jar ${WSO2_SERVER_HOME}/repository/components/dropins/
+ADD --chown=wso2carbon:wso2 https://panel.repsy.io/mvn/hungdt138/authenticator//org/wso2/sample/authenticator/org.wso2.sample.authenticator.multi.attribute/1.0.0/org.wso2.sample.authenticator.multi.attribute-1.0.0.jar ${WSO2_SERVER_HOME}/repository/components/dropins/
 # add MySQL JDBC connector to server home as a third party library
 ADD --chown=wso2carbon:wso2 https://repo1.maven.org/maven2/mysql/mysql-connector-java/${MYSQL_CONNECTOR_VERSION}/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar ${WSO2_SERVER_HOME}/repository/components/dropins/
 # add Postgres connector
 ADD --chown=wso2carbon:wso2 https://jdbc.postgresql.org/download/postgresql-42.2.23.jar ${WSO2_SERVER_HOME}/repository/components/lib/
 ADD --chown=wso2carbon:wso2 https://jdbc.postgresql.org/download/postgresql-42.2.23.jar ${WSO2_SERVER_HOME}/lib/
+
+# update toml
+# RUN \
+#     rm -rf ${WSO2_SERVER_HOME}/repository/conf/deployment.toml
+# COPY --chown=wso2carbon:wso2 deployment.toml ${WSO2_SERVER_HOME}/repository/conf/
+
+# # update login.jsp
+# RUN \
+#     rm -rf ${WSO2_SERVER_HOME}/repository/deployment/server/webapps/authenticationendpoint/login.jsp
+COPY --chown=wso2carbon:wso2 login.jsp ${WSO2_SERVER_HOME}/repository/deployment/server/webapps/authenticationendpoint/
+
+# # create userstore
+COPY --chown=wso2carbon:wso2 TEST04.xml ${WSO2_SERVER_HOME}/repository/deployment/server/userstores/
 
 # set the user and work directory
 USER ${USER_ID}

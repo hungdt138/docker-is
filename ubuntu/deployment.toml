@@ -1,0 +1,84 @@
+[server]
+hostname = "localhost"
+node_ip = "127.0.0.1"
+base_path = "https://$ref{server.hostname}:${carbon.management.port}"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[user_store]
+type = "database_unique_id"
+#connection_url = "ldap://localhost:${Ports.EmbeddedLDAP.LDAPServerPort}"
+#connection_name = "uid=admin,ou=system"
+#connection_password = "admin"
+#base_dn = "dc=wso2,dc=org"      #refers the base dn on which the user and group search bases will be generated
+#user_name_search_filter = "(&amp;(objectClass=identityPerson)(|(mail=?)(uid=?)))"
+#properties.MultipleAttributeEnable = true
+
+[user_store.properties]
+UsernameWithEmailJavaScriptRegEx= "[a-zA-Z0-9._\\-|//]{3,30}$"
+
+[database.user]
+url = "jdbc:postgresql://172.19.0.2:5432/WSO2_USER_STORE?currentSchema=user_store_03"
+username = "postgres"
+password = "123456aA@"
+driver = "org.postgresql.Driver"
+
+[realm_manager]
+data_source = "WSO2USER_DB"
+
+[database.identity_db]
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2IDENTITY_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
+username = "wso2carbon"
+password = "wso2carbon"
+
+[database.shared_db]
+type = "h2"
+url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
+username = "wso2carbon"
+password = "wso2carbon"
+
+[keystore.primary]
+file_name = "wso2carbon.jks"
+password = "wso2carbon"
+
+[tenant_mgt]
+enable_email_domain = true
+
+[authentication.authenticator.basic]
+name ="BasicAuthenticator"
+enable=true
+UserNameAttributeClaimUri = "http://wso2.org/claims/emailaddress"
+
+[authentication.custom_authenticator.multi-attribute-authenticator]
+name = "MultiAttributeAuthenticator"
+enable = "true"
+
+[authentication.custom_authenticator.multi-attribute-authenticator.parameters]
+AuthMechanism = "basic"
+claimuri_1 = 'http://wso2.org/claims/emailaddress'
+claimregex_1 = '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$'
+claimuri_2 = 'http://wso2.org/claims/mobile'
+claimregex_2 = '^\+?(\d{3})*[0-9,\-]{8,}$'
+
+[admin_service.wsdl] 
+enable= true
+
+[[datasource]]
+id="userstore04"
+url="jdbc:postgresql://172.19.0.2:5432/WSO2_USER_STORE?currentSchema=user_store_04"
+username="postgres"
+password="123456aA@"
+driver = "org.postgresql.Driver"
+jmx_enable=false
+pool_options.maxActive = "100"
+pool_options.maxWait = "60000"
+pool_options.minIdle = "5"
+pool_options.testOnBorrow = true
+pool_options.testWhileIdle = true
+pool_options.validationQuery="SELECT 1; COMMIT"
+pool_options.validationInterval="30000"
+pool_options.defaultAutoCommit=false
